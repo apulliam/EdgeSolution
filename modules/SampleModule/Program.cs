@@ -1,6 +1,7 @@
 namespace SampleModule
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Runtime.Loader;
@@ -17,7 +18,7 @@ namespace SampleModule
 
         static void Main(string[] args)
         {
-            Init().Wait();
+            Init(false).Wait();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -40,8 +41,15 @@ namespace SampleModule
         /// Initializes the ModuleClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Init()
+        static async Task Init(bool debug = false)
         {
+#if DEBUG            
+            while (debug && !Debugger.IsAttached)
+            {
+                Console.WriteLine("Module waiting for debugger to attach...");
+                await Task.Delay(1000);
+            };
+#endif
             MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             ITransportSettings[] settings = { mqttSetting };
 
